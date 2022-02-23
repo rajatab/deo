@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://127.0.0.1:8080/ -->
+<html lang="en" coupert-item="9AF8D9A4E502F3784AD24272D81F0381" class="js-focus-visible" data-js-focus-visible=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  
+  <title>CodePen - Motocross game</title>
+  <style>
+    body{
+  margin: 0;
+  font-family: monospace;
+  font-size: 1.25em;
+}
+    </style>
+
+<style>
+        @font-face{
+            font-family: 'Circular'; 
+            font-weight: 400;
+            src: url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Regular.eot);
+            src: url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Regular.eot?#iefix) format('embedded-opentype'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Regular.woff2) format('woff2'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Regular.woff) format('woff'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Regular.ttf) format('truetype'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Regular.svg) format('svg');
+        }
+        @font-face{
+            font-family: 'Circular'; 
+            font-weight: 700;
+            src: url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Bold.eot);
+            src: url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Bold.eot?#iefix) format('embedded-opentype'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Bold.woff2) format('woff2'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Bold.woff) format('woff'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Bold.ttf) format('truetype'),
+                url(chrome-extension://mfidniedemcgceagapgdekdbmanojomk/font/Circular-Pro-Black-Bold.svg) format('svg');
+        }
+    </style><style type="text/css">
+@font-face {
+  font-weight: 400;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Book-cd7d2bcec649b1243839a15d5eb8f0a3.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 500;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Medium-d74eac43c78bd5852478998ce63dceb3.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 700;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Bold-83b8ceaf77f49c7cffa44107561909e4.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 900;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Black-bf067ecb8aa777ceb6df7d72226febca.woff2') format('woff2');
+}</style></head>
+<body>
+
+<template></template>
+
+  <script>
+    var c = document.createElement("canvas");
+var ctx = c.getContext("2d");
+c.width = 720; 
+c.height = 480;
+document.body.appendChild(c);
+
+var perm = [];
+while (perm.length < 255){
+    while(perm.includes(val = Math.floor(Math.random()*255)));
+    perm.push(val);
+}
+
+var lerp = (a,b,t) => a + (b-a) * (1-Math.cos(t*Math.PI))/2;
+var noise = x=>{
+    x = x * 0.01 % 254;
+    return lerp(perm[Math.floor(x)], perm[Math.ceil(x)], x - Math.floor(x));
+}
+
+var Player =  function(){
+    this.x = c.width/2;
+    this.y = 0;
+    this.ySpeed = 0;
+    this.rot = 0;
+    this.rSpeed = 0;
+    this.img = new Image();
+    this.img.src = document.getElementsByTagName("template")[0].innerHTML;
+    this.draw = function(){
+        var p1 =  c.height - noise(t + this.x) * 0.25;
+        var p2 =  c.height - noise(t+5 + this.x) * 0.25;
+
+        var grounded = 0;
+        if(p1-12 > this.y){
+            this.ySpeed += 0.1;
+        }else{
+            this.ySpeed -= this.y - (p1-12);
+            this.y = p1 - 12;
+            grounded = 1;
+        }
+
+        var angle = Math.atan2((p2-12) - this.y, (this.x+5) - this.x);
+        this.y += this.ySpeed;
+
+        if(!playing || grounded && Math.abs(this.rot) > Math.PI * 0.5){
+            playing = false;
+            this.rSpeed = 5;
+            k.ArrowUp = 1;
+            this.x -= speed * 5;
+        }
+
+        
+        if(grounded && playing){
+            this.rot -= (this.rot - angle) * 0.65;
+            this.rSpeed = this.rSpeed - (angle - this.rot);
+        }
+        this.rSpeed += (k.ArrowUp - k.ArrowDown) * 0.05;
+        this.rot -= this.rSpeed * 0.1;
+        if(this.rot > Math.PI) this.rot = -Math.PI;
+        if(this.rot < -Math.PI) this.rot = Math.PI;
+        ctx.save();
+        ctx.translate(this.x, this.y - 3);
+        ctx.rotate(this.rot);
+        ctx.drawImage(this.img, -15, -15, 30, 30);
+        ctx.restore();
+    }
+}
+
+var player = new Player();
+var t = 0;
+var speed = 0;
+var playing = true;
+var k = {ArrowUp:0, ArrowDown:0, ArrowLeft:0, ArrowRight:0};
+function loop(){
+    speed -= (speed - (k.ArrowRight - k.ArrowLeft)) * 0.01;
+    t += 10 * speed;
+    ctx.fillStyle = "#19f";
+    ctx.fillRect(0,0,c.width, c.height);
+
+    ctx.fillStyle = "rgba(0,0,0,0.25)";
+    ctx.beginPath();
+    ctx.moveTo(0, c.height);
+    for (let i = 0; i < c.width; i++)
+        ctx.lineTo(i, c.height*0.8 - noise(t + i*5) * 0.25);
+    ctx.lineTo(c.width, c.height);
+    ctx.fill();
+
+    ctx.fillStyle = "#444";
+    ctx.beginPath();
+    ctx.moveTo(0, c.height);
+    for (let i = 0; i < c.width; i++)
+        ctx.lineTo(i, c.height - noise(t + i) * 0.25);
+    ctx.lineTo(c.width, c.height);
+    ctx.fill();
+
+    player.draw();
+    if(player.x < 0)
+        restart();
+    requestAnimationFrame(loop);
+}
+
+onkeydown = d=> k[d.key] = 1;
+onkeyup = d=> k[d.key] = 0;
+
+function restart(){
+    
+    player = new Player();
+    t = 0;
+    speed = 0;
+    playing = true;
+    k = {ArrowUp:0, ArrowDown:0, ArrowLeft:0, ArrowRight:0};
+
+}
+loop();
+
+var instructions = document.createElement("div");
+instructions.innerHTML += "[Left] [Rigth] = accelerate <br> [up] [down] = rotate";
+document.body.appendChild(instructions);
+    </script><canvas width="720" height="480"></canvas><div>[Left] [Rigth] = accelerate <br> [up] [down] = rotate</div>
+
+<!-- Code injected by live-server -->
+<script type="text/javascript">
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function() {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					head.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					head.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function(msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			console.log('Live reload enabled.');
+		})();
+	}
+	// ]]>
+</script>
+
+</body><div id="156f3467-bf7e-4163-8008-640e67e3637e" style="all: initial;"></div><div id="47e52b53-00e3-47dc-b92a-f42fe9d52927" style="all: initial;"></div><div id="251030bc-900e-4024-ab25-860d453decad" style="all: initial;"></div><div id="f6e88aaa-4adc-4598-97e1-d825c631986d" style="all: initial;"></div><div id="bc5a7dd0-7185-44b2-ac61-237f71fb84f4" style="all: initial;"></div><div id="8bda6291-0d17-413e-b4ef-761eef1c266b" style="all: initial;"></div><div id="29bf643e-4bee-44f8-a811-46a5c3f3d1c6" style="all: initial;"></div><div id="fddf9f9c-f612-4f48-a5cf-69fa5e7d562a" style="all: initial;"></div><div id="0c8fa309-8c5a-48ee-baa9-b53e9265d2d5" style="all: initial;"></div><div id="40215b62-fb6e-4904-95f6-09f66a1f3082" style="all: initial;"></div><div id="8076737f-3175-436e-98d3-39c3fba7b38a" style="all: initial;"></div><div id="c94abcf1-812f-4e05-9125-dfc45c83515c" style="all: initial;"></div><div id="68d9db0c-30c5-4035-ba8d-d8cf68de001b" style="all: initial;"></div><loom-container id="lo-engage-ext-container"><loom-shadow classname="resolved"></loom-shadow></loom-container><loom-container id="lo-companion-container"><loom-shadow classname="resolved"></loom-shadow></loom-container></html>
